@@ -13,14 +13,14 @@ int mem_size = 100;
 String mem[100]; // PC, W, X, Y, [restante]
 String op_code[1];
 
-int clock = 100; // Bytes por segundo
+int clock = 250; // Bytes por segundo
 // (é multiplicado por 8 em Serial.begin(),
 //  por isso, bytes e não bits)
 
 // Ativar debug mode para executar instrução
 // por instrução, sendo necessário um input qualquer
 // para passar à próxima
-bool debug_mode = true;
+bool debug_mode = false;
 //--------------------------------------------------
 
 // Inicializar elementos do arduino
@@ -161,9 +161,13 @@ void executar(String* w, String* x, String* y, String* op){
   int res = 0; // Variável de resposta
   switch (a) {
     case 0: // zeroL
+      // É o mesmo que o valor padrão
+      // de res, então não precisa
+      // atualizar
       break;
     case 1: // umL
-      res = 1;
+      // 1 lógico = 1111(2) = 15(10) = F(16)
+      res = 15;
       break;
     case 2: // copiaA
       res = v1;
