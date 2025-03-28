@@ -65,7 +65,7 @@ def charDecode(value):
 def main():
     #print("Program start")
     # Abrir arquivo de leitura e de escrita
-    fi = open("testeula.ula", "rt") # File_Input
+    fi = open("TESTEULA3.ula", "rt") # File_Input
     fo = open("testeula.hex", "wt") # File_Output
 
     # Inicializar variáveis
@@ -110,7 +110,7 @@ def main():
 
     # Salvar um XXX no fim do arquivo, indicador para
     # o código do Arduino
-    fo.write("XXX\n")
+    # fo.write("XXX\n")
     # Fechar arquivos
     fi.close()
     fo.close()

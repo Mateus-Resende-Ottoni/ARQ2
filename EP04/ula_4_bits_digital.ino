@@ -13,9 +13,13 @@ int mem_size = 100;
 String mem[100]; // PC, W, X, Y, [restante]
 String op_code[1];
 
-int clock = 250; // Bytes por segundo
+int clock = 1200; // Bytes por segundo
 // (é multiplicado por 8 em Serial.begin(),
 //  por isso, bytes e não bits)
+
+// Tempo de espera entre operações
+// em milissegundos
+int delay_time = 3000;
 
 // Ativar debug mode para executar instrução
 // por instrução, sendo necessário um input qualquer
@@ -194,7 +198,7 @@ void executar(String* w, String* x, String* y, String* op){
       res = ((~b1) | (~b2)) & ~((~b1) & ~(b2));
       break;
     case 10: // nAxnBn
-      res = ~((~b1) | (~b2)) & ~((~b1) & ~(b2));
+      res = ~( ((~b1) | (~b2)) & ~((~b1) & ~(b2)) );
       break;
     case 11: // AeB
       res = b1 & b2;
@@ -276,10 +280,10 @@ void light_up(int value){
 }
 
 // Print do estado atual da memória
-void dump(){
+void dump(int input_quant){
   int a = 0;
   Serial.print("-> | ");
-  while (a < mem_size && mem[a] != "XXX") {
+  while (a < mem_size && a < (input_quant+4) ) {
     Serial.print(mem[a]);
     Serial.print(" | ");
     a++;
@@ -309,6 +313,10 @@ void loop()
   bool inputed = false;
   bool finished_reading = false;
   bool next = false;
+  bool flag1 = false;
+  bool flag2 = false;
+  bool flag3 = false;
+  int input_quant = 0;
   String input;
   String lixo;
   
@@ -321,23 +329,35 @@ void loop()
   
     // Ler todos inputs
     while(!finished_reading && PC < mem_size) {
+      // Quando detectar input, o adicionar a memória
       if ( Serial.available() > 0 ) {
         instrucao = Serial.readStringUntil(' ');
-        if (instrucao == "XXX") {
-         finished_reading = true; 
-        }
-        else {
+
          mem[PC] = instrucao;
     
          updatePC(); 
-        } // Fim _ if (instrucao == "XXX")
+        
+         // Atualizar quantidade de inputs
+         input_quant = input_quant + 1;
+        
+         flag1 = flag2 = flag3 = false;
       } // Fim _ if ( Serial.available() > 0 )
+      // Mecanismo para garantir detecção
+      // de fim de input
+      if (!flag1) {
+        flag1 = true;
+      } else if (!flag2) {
+       	flag2 = true; 
+      } else if (!flag3) {
+        flag3 = true;
+      } else {
+        flag1 = flag2 = flag3 = false;
+        finished_reading = true;
+      }
+      delay(100);
     } // Fim _ while(Serial.available() && PC < mem_size)
     // Se não tiver chegado no fim do espaço da
     // memória, salvar um indicador de fim
-    if (PC < mem_size) {
-    	mem[PC] = "XXX"; 
-    } // Fim _ if (PC < mem_size)
   
     // Retornar ao início dos inputs
     PC = InputStart;
@@ -366,7 +386,7 @@ void loop()
     else {
       Serial.println("Iniciando operacao");
       // Ler até o fim das instruções
-      while(PC < mem_size && mem[PC] != "XXX") {
+      while(PC < mem_size && PC < (input_quant+4) ) {
 	    instrucao = mem[PC];
     
         // Decodificar
@@ -376,7 +396,10 @@ void loop()
         // Passar ao próximo
         updatePC();     
         // Dump/Print da memória
-        dump();
+        dump(input_quant);
+        
+        // Tempo de espera entre operações
+        delay(delay_time);
         
         // Esperar input caso
         // debug_mode seja verdadeiro
@@ -393,6 +416,6 @@ void loop()
       } // Fim _ while(PC < mem_size && mem[PC] != "XXX")
     } // Fim _ if (!executar)
   
-  
+  Serial.println("Fim do Programa");
   
 } // Fim loop()
